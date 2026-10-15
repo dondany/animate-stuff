@@ -1,11 +1,15 @@
 import { renderHome } from './screens/home.js';
 import { renderCapture } from './screens/capture.js';
 import { renderPlay } from './screens/play.js';
+import { renderScan } from './screens/scan.js';
+import { renderSheets } from './screens/sheets.js';
 
 const routes = [
   [/^#?\/?$/, renderHome],
   [/^#\/capture\/([\w-]+)$/, renderCapture],
   [/^#\/play\/([\w-]+)$/, renderPlay],
+  [/^#\/scan$/, renderScan],
+  [/^#\/sheets$/, renderSheets],
 ];
 
 const app = document.getElementById('app');

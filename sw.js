@@ -1,10 +1,12 @@
 // Network first, falling back to the cache, so the app still opens without
 // Wi-Fi but always picks up the newest version when online.
-const CACHE = 'animate-v1';
+const CACHE = 'animate-v2';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/db.js', 'js/ui.js', 'js/camera.js', 'js/gif.js',
+  'js/sheet.js', 'js/scanner.js',
   'js/screens/home.js', 'js/screens/capture.js', 'js/screens/play.js',
+  'js/screens/scan.js', 'js/screens/sheets.js',
   'vendor/gifenc.esm.js', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-512.png',
 ];
 

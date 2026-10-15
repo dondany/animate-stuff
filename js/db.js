@@ -54,7 +54,9 @@ export function saveProject(project) {
   return run('projects', 'readwrite', (tx) => req(tx.objectStore('projects').put(project)));
 }
 
-export async function createProject() {
+// `fields` can override the defaults, e.g. { name, fps, label } for a scanned sheet.
+// `label` is an optional { type, data: ArrayBuffer } image of the child's handwritten name.
+export async function createProject(fields = {}) {
   const count = (await listProjects()).length;
   const project = {
     id: newId(),
@@ -64,6 +66,7 @@ export async function createProject() {
     frameIds: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    ...fields,
   };
   await saveProject(project);
   return project;

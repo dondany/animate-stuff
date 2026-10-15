@@ -401,3 +401,61 @@ input[type="range"]::-webkit-slider-thumb {
 .progress > div { height: 100%; width: 0; background: var(--mint); transition: width .15s; }
 
 [hidden] { display: none !important; }
+
+/* ---------- drawing sheets ---------- */
+
+.sheets .chips { gap: 8px; }
+.sheet-preview { background: #fff; border-radius: 10px; overflow: hidden; line-height: 0; }
+.sheet-preview svg { width: 100%; height: auto; }
+.note { margin: 0; color: var(--muted); line-height: 1.45; font-size: 15px; }
+
+.print-area { display: none; }
+
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+  html, body { background: #fff; height: auto; }
+  body > *:not(.print-area) { display: none !important; }
+  .print-area { display: block; }
+  .print-area svg { display: block; width: 297mm; height: 209mm; break-after: page; }
+  .print-area svg:last-child { break-after: auto; }
+}
+
+/* ---------- scanning ---------- */
+
+.steps { margin: 0; padding-left: 22px; color: var(--muted); line-height: 1.5; }
+.new-card .plus svg { width: 28px; height: 28px; }
+.scan-list { display: flex; flex-direction: column; gap: 14px; }
+
+.scan-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scan-card .stage { width: 100%; }
+.scan-card.failed p { margin: 0; color: var(--text); line-height: 1.45; }
+.scan-card .working { margin: 0; color: var(--muted); text-align: center; padding: 30px 0; }
+.scan-card .debug-img { width: 100%; border-radius: 10px; }
+.scan-card .saved { flex: 1; color: var(--mint); font-weight: 700; }
+.scan-card .row .btn.mint { flex: 0 0 auto; }
+
+.label-img { display: block; width: 100%; border-radius: 8px; background: #fff; }
+.card .label-img { margin-top: 8px; }
+
+.name-input {
+  font: inherit;
+  font-size: 18px;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 2px solid var(--surface-2);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.name-input:focus { outline: none; border-color: var(--sky); }

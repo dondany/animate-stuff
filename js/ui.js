@@ -29,6 +29,7 @@ export const icons = {
   trash: svg('<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>'),
   copy: svg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/>'),
   pencil: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
+  print: svg('<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>'),
   boomerang: svg('<path d="M4 9h13l-3-3"/><path d="M20 15H7l3 3"/>'),
 };
 
