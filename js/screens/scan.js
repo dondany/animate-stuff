@@ -46,7 +46,7 @@ export function renderScan(root) {
     }
   }
 
-  function showResult(card, { frames, label }) {
+  function showResult(card, { frames, label, count }) {
     const frameUrls = frames.map(objectUrl);
     const imgs = frameUrls.map((src, i) => h('img', { src, alt: `Frame ${i + 1}`, hidden: i > 0 }));
     const stage = h('div', { class: 'stage' }, imgs);
@@ -71,7 +71,7 @@ export function renderScan(root) {
       const count = (await listProjects()).length;
       const project = await createProject({
         name: nameInput.value.trim() || `Drawing ${count + 1}`,
-        fps: 4,
+        fps: { 4: 4, 8: 6, 12: 8 }[count] ?? 4,
         label: { type: label.type, data: await label.arrayBuffer() },
       });
       for (const blob of frames) await addFrame(project, blob);

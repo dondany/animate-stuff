@@ -409,17 +409,6 @@ input[type="range"]::-webkit-slider-thumb {
 .sheet-preview svg { width: 100%; height: auto; }
 .note { margin: 0; color: var(--muted); line-height: 1.45; font-size: 15px; }
 
-.print-area { display: none; }
-
-@media print {
-  @page { size: A4 landscape; margin: 0; }
-  html, body { background: #fff; height: auto; }
-  body > *:not(.print-area) { display: none !important; }
-  .print-area { display: block; }
-  .print-area svg { display: block; width: 297mm; height: 209mm; break-after: page; }
-  .print-area svg:last-child { break-after: auto; }
-}
-
 /* ---------- scanning ---------- */
 
 .steps { margin: 0; padding-left: 22px; color: var(--muted); line-height: 1.5; }

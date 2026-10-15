@@ -6,7 +6,7 @@
 //    paper colour measured just outside the frame, which removes shadows and
 //    colour casts, then push near-white (paper, faint guide lines) to white.
 
-import { MARKERS, FRAMES, FRAME, NAME_RECT, NUMBER_R, numberCenter } from './sheet.js';
+import { MARKERS, LAYOUTS, NAME_RECT, NUMBER_R, numberCenter } from './sheet.js';
 import { FRAME_W, FRAME_H } from './camera.js';
 
 const DETECT_SIZE = 1200;
@@ -24,7 +24,7 @@ export async function scanSheet(file) {
   const sample = drawScaled(img, SAMPLE_SIZE);
   const detect = drawScaled(sample.canvas, DETECT_SIZE);
   const gray = toGray(detect.data, detect.w, detect.h);
-  const { corners, candidates } = findMarkers(gray, detect.w, detect.h);
+  const { corners, layout, candidates } = findMarkers(gray, detect.w, detect.h);
 
   if (!corners) {
     throw new ScanError(
@@ -41,13 +41,14 @@ export async function scanSheet(file) {
     [corners.tl, corners.tr, corners.bl, corners.br].map((p) => [p.x * k, p.y * k]),
   );
 
+  const badges = layout.frames.map(numberCenter);
   const frames = [];
-  for (const f of FRAMES) {
-    frames.push(await toJpeg(warpFrame(sample, H, f)));
+  for (const f of layout.frames) {
+    frames.push(await toJpeg(warpFrame(sample, H, f, badges)));
     await new Promise((r) => setTimeout(r, 0));
   }
   const label = await toJpeg(warpLabel(sample, H));
-  return { frames, label };
+  return { frames, label, count: layout.count };
 }
 
 // ---------- image plumbing ----------
@@ -255,20 +256,20 @@ function sizeError(H, assigned) {
 }
 
 // Fraction of points on the printed frame borders that really are dark lines.
-function borderScore(gray, w, h, H) {
+function borderScore(gray, w, h, H, layout) {
   const at = (x, y) => {
     const [px, py] = project(H, x, y);
     const ix = Math.round(px), iy = Math.round(py);
     return ix < 0 || iy < 0 || ix >= w || iy >= h ? -1 : gray[iy * w + ix];
   };
   let hits = 0, total = 0;
-  for (const f of FRAMES) {
+  for (const f of layout.frames) {
     const edges = [
-      [f.x, f.y, 1, 0, 0, -1], [f.x, f.y + FRAME.h, 1, 0, 0, 1],
-      [f.x, f.y, 0, 1, -1, 0], [f.x + FRAME.w, f.y, 0, 1, 1, 0],
+      [f.x, f.y, 1, 0, 0, -1], [f.x, f.y + f.h, 1, 0, 0, 1],
+      [f.x, f.y, 0, 1, -1, 0], [f.x + f.w, f.y, 0, 1, 1, 0],
     ];
     for (const [x0, y0, dx, dy, nx, ny] of edges) {
-      const len = dx ? FRAME.w : FRAME.h;
+      const len = dx ? f.w : f.h;
       for (let t = 0.1; t < 0.95; t += 0.1) {
         const x = x0 + dx * len * t, y = y0 + dy * len * t;
         const line = Math.min(...[-0.6, 0, 0.6].map((o) => at(x + nx * o, y + ny * o)).filter((v) => v >= 0));
@@ -281,8 +282,9 @@ function borderScore(gray, w, h, H) {
   return hits / total;
 }
 
-// Tries every plausible way of matching found squares to the sheet's corners
-// and keeps the one whose frame borders line up best.
+// Tries every plausible way of matching found squares to the sheet's corners,
+// and every frame layout (4, 8 or 12 pictures), and keeps the combination
+// whose printed frame borders line up best.
 function findMarkers(gray, w, h) {
   const candidates = finderCandidates(threshold(gray, w, h), w, h);
   const top = [...candidates].sort((a, b) => b.size - a.size).slice(0, 12);
@@ -294,8 +296,10 @@ function findMarkers(gray, w, h) {
     if (!H.every(Number.isFinite)) return;
     const err = sizeError(H, { tl, tr, bl, br });
     if (err > 0.5) return;
-    const score = borderScore(gray, w, h, H) - err * 0.2 - (br ? 0 : 0.1);
-    if (!best || score > best.score) best = { score, corners: { tl, tr, bl, br: corner } };
+    for (const layout of LAYOUTS) {
+      const score = borderScore(gray, w, h, H, layout) - err * 0.2 - (br ? 0 : 0.1);
+      if (!best || score > best.score) best = { score, layout, corners: { tl, tr, bl, br: corner } };
+    }
   };
 
   // For three points, TL is the one where TR and BL turn clockwise, as on the page.
@@ -333,7 +337,8 @@ function findMarkers(gray, w, h) {
       }
   }
 
-  return { corners: best && best.score >= 0.6 ? best.corners : null, candidates };
+  const found = best && best.score >= 0.6;
+  return { corners: found ? best.corners : null, layout: found ? best.layout : null, candidates };
 }
 
 // ---------- geometry ----------
@@ -460,17 +465,16 @@ for (let i = 0; i < 512; i++) {
   TONE[i] = 255 * Math.pow(Math.min(1, Math.max(0, (r - 0.1) / 0.7)), 1.15);
 }
 
-function warpFrame(img, H, f) {
+function warpFrame(img, H, f, badges) {
   // The crop sits inside the printed border and keeps a 4:3 shape.
-  const innerW = FRAME.w - 5;
+  const innerW = f.w - 5;
   const innerH = innerW * FRAME_H / FRAME_W;
   const x0 = f.x + 2.5;
-  const y0 = f.y + (FRAME.h - innerH) / 2;
+  const y0 = f.y + (f.h - innerH) / 2;
 
   // Paper colour on a ring 3.5 mm outside the frame, skipping the number badge.
   const d = 3.5;
-  const L = f.x - d, R = f.x + FRAME.w + d, T = f.y - d, B = f.y + FRAME.h + d;
-  const badges = FRAMES.map(numberCenter);
+  const L = f.x - d, R = f.x + f.w + d, T = f.y - d, B = f.y + f.h + d;
   const skip = (x, y) => badges.some((b) => Math.hypot(x - b.x, y - b.y) < NUMBER_R + 1.5);
   const [top, bottom, left, right] = cleanSides([
     paperAlong(img, H, [L, T], [R, T], skip),

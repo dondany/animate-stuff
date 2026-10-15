@@ -24,12 +24,13 @@ Open the printed `https://192.168.x.x:8443` address in Safari on the iPhone
 - **Capture**: live camera with "ghost" (onion skin) of the previous photo,
   undo, shutter sound, keeps the screen awake.
 - **Play**: speed slider, back & forth (boomerang) mode, copy/delete frames.
-- **Drawing sheets**: printable A4 sheets with 4 numbered boxes and faint
-  outlines to trace (bouncing ball, sunrise, growing flower, sad → happy face,
-  jumping kid, or blank).
+- **Drawing sheets**: printable A4 landscape PDFs with 4, 8 or 12 numbered
+  boxes and faint outlines to trace (bouncing ball, sunrise, growing flower,
+  sad → happy face, jumping kid, or blank). Outlines are generated from a
+  progress value, so every frame count gets smooth in-betweens.
 - **Scan drawings**: photograph a filled-in sheet (or pick many photos at once)
   and the app finds the corner squares, straightens the page, evens out
-  shadows, cuts out the 4 frames and the child's handwritten name.
+  shadows, detects the layout, cuts out the frames and the child's handwritten name.
 - **Save GIF**: exports a 480×360 looping GIF and opens the iPhone share sheet
   (Save Image → Photos, Messages, AirDrop…).
 
@@ -43,7 +44,8 @@ js/app.js          hash router (#/, #/capture/:id, #/play/:id)
 js/db.js           IndexedDB storage for projects and frames
 js/camera.js       camera start/stop and 4:3 frame grabbing
 js/gif.js          GIF export (vendor/gifenc)
-js/sheet.js        printable sheet layout (mm) and trace outlines
+js/sheet.js        printable sheet layouts (mm) and trace outlines
+js/pdf.js          tiny PDF writer (one JPEG per A4 page)
 js/scanner.js      sheet detection, perspective correction, paper whitening
 js/screens/*.js    home, capture, play screens
 sw.js              offline cache (network first)
